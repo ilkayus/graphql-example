@@ -6,6 +6,7 @@ import {
   useQuery,
   useLazyQuery,
   gql,
+  useMutation,
 } from "@apollo/client";
 
 function App() {
@@ -25,15 +26,16 @@ function App() {
 }
 
 function DisplayData() {
-  const { data, loading, error } = useQuery(QUERY_ALL_USERS);
+  const { data, loading, error, refetch } = useQuery(QUERY_ALL_USERS);
   const { data: movieData } = useQuery(QUERY_ALL_MOVIES);
-  console.log(data, movieData);
   if (error) console.log(error);
   if (loading) return <h1>Loading...</h1>;
+  console.log(movieData);
   return (
     <div>
       <h1>Data</h1>
       {data ? data.users.map((user: any) => <div>{user.username}</div>) : ""}
+      <CreateUser refetch={refetch} />
     </div>
   );
 }
@@ -54,6 +56,61 @@ function DisplayUser() {
         value={userId}
       />
       <button onClick={() => fetchUser({ variables: { userId } })}>Get</button>
+    </div>
+  );
+}
+
+function CreateUser({ refetch }: { refetch: () => void }) {
+  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [age, setAge] = useState(0);
+  const [nationality, setNationality] = useState("");
+
+  const [createUser, { data, loading, error }] = useMutation(CREATE_USER, {
+    onCompleted: (data) => {
+      console.log(data);
+      refetch();
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
+  return (
+    <div>
+      <h1>Create User</h1>
+      <input
+        type="text"
+        placeholder="name"
+        onChange={(e) => setName(e.target.value)}
+        value={name}
+      />
+      <input
+        type="text"
+        placeholder="username"
+        onChange={(e) => setUsername(e.target.value)}
+        value={username}
+      />
+      <input
+        type="number"
+        placeholder="Age"
+        onChange={(e) => setAge(Number(e.target.value))}
+        value={age}
+      />
+      <input
+        type="text"
+        placeholder="Nationality"
+        onChange={(e) => setNationality(e.target.value)}
+        value={nationality}
+      />
+      <button
+        onClick={() =>
+          createUser({
+            variables: { input: { name, username, age, nationality } },
+          })
+        }
+      >
+        Create
+      </button>
     </div>
   );
 }
@@ -93,6 +150,17 @@ const QUERY_ALL_MOVIES = gql`
       id
       name
       year
+    }
+  }
+`;
+const CREATE_USER = gql`
+  mutation CreateUser($input: CreateUserInput!) {
+    createUser(input: $input) {
+      id
+      name
+      age
+      username
+      nationality
     }
   }
 `;
