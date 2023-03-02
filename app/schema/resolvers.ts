@@ -22,6 +22,16 @@ const resolvers = {
       console.log(user);
       return user;
     },
+
+    updateUsername: (user: any, args: any) => {
+      userList[args.input.id - 1].username = args.input.username;
+      return userList[args.input.id - 1];
+    },
+
+    deleteUser: (user: any, args: any) => {
+      userList.splice(args.id - 1, 1);
+      return "User deleted";
+    },
   },
 };
 
