@@ -2,7 +2,10 @@ import { userList, movieList } from "../fakeData";
 
 const resolvers = {
   Query: {
-    users: () => userList,
+    users: () => {
+      if (userList) return { users: userList };
+      return { message: "There was an error!" };
+    },
     user: (parent: any, { id }: { id: string }) =>
       userList.find((user) => user.id === Number(id)),
     movies: () => movieList,
@@ -31,6 +34,14 @@ const resolvers = {
     deleteUser: (user: any, args: any) => {
       userList.splice(args.id - 1, 1);
       return "User deleted";
+    },
+  },
+
+  UsersResult: {
+    __resolveType(obj: any) {
+      if (obj.users) return "UsersResultSuccess";
+      if (obj.message) return "UsersResultError";
+      return null;
     },
   },
 };

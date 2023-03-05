@@ -28,13 +28,16 @@ function App() {
 function DisplayData() {
   const { data, loading, error, refetch } = useQuery(QUERY_ALL_USERS);
   const { data: movieData } = useQuery(QUERY_ALL_MOVIES);
+  if (data) console.log(data);
   if (error) console.log(error);
   if (loading) return <h1>Loading...</h1>;
   console.log(movieData);
   return (
     <div>
       <h1>Data</h1>
-      {data ? data.users.map((user: any) => <div>{user.username}</div>) : ""}
+      {data
+        ? data.users.users.map((user: any) => <div>{user.username}</div>)
+        : ""}
       <CreateUser refetch={refetch} />
     </div>
   );
@@ -43,7 +46,7 @@ function DisplayData() {
 function DisplayUser() {
   const [userId, setUserId] = useState(0);
   const [fetchUser, { data, loading, error }] = useLazyQuery(QUERY_SINGLE_USER);
-  // if (error) console.log(error);
+  if (error) console.log(error);
   if (loading) return <h1>Loading...</h1>;
   console.log(userId);
   console.log(data);
@@ -115,6 +118,14 @@ function CreateUser({ refetch }: { refetch: () => void }) {
   );
 }
 
+const PERSONAL_INFO = gql`
+  fragment PersonalInfoAboutUser on User {
+    name
+    age
+    nationality
+  }
+`;
+
 const QUERY_SINGLE_USER = gql`
   query User($userId: ID!) {
     user(id: $userId) {
@@ -135,11 +146,19 @@ const QUERY_SINGLE_USER = gql`
 const QUERY_ALL_USERS = gql`
   query getAllUsers {
     users {
-      id
-      name
-      age
-      username
-      nationality
+      ... on UsersResultSuccess {
+        users {
+          id
+          name
+          username
+          age
+          nationality
+          type
+        }
+      }
+      ... on UsersResultError {
+        message
+      }
     }
   }
 `;

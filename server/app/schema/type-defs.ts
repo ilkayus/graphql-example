@@ -21,7 +21,7 @@ const typeDefs = gql`
   }
 
   type Query {
-    users: [User!]!
+    users: UsersResult
     user(id: ID!): User!
     movies: [Movie!]!
     movie(name: String!): Movie!
@@ -50,6 +50,16 @@ const typeDefs = gql`
     USER
     ADMIN
   }
+
+  type UsersResultSuccess {
+    users: [User!]!
+  }
+
+  type UsersResultError {
+    message: String!
+  }
+
+  union UsersResult = UsersResultSuccess | UsersResultError
 `;
 
 export default typeDefs;
